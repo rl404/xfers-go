@@ -19,10 +19,12 @@ func init() {
 	val.RegisterValidationCtx("status", validateStatus)
 	val.RegisterValidationCtx("payment_action", validationPaymentAction)
 	val.RegisterValidationCtx("disbursement_action", validationDisbursementAction)
+	val.RegisterValidationCtx("payment_method_action", validationPaymentMethodAction)
 	val.RegisterValidationCtx("payment_type", validationPaymentType)
 	val.RegisterValidationCtx("retail_outlet", validationRetailOutlet)
 	val.RegisterValidationCtx("va_bank_code", validationVABankCode)
 	val.RegisterValidationCtx("e_wallet", validationEWallet)
+	val.RegisterValidationCtx("payment_method", validationPaymentMethod)
 
 	mod = modifiers.New()
 	mod.Register("no_space", modNoSpace)
@@ -96,6 +98,12 @@ func validationDisbursementAction(ctx context.Context, fl validator.FieldLevel) 
 	}[Action(fl.Field().String())]
 }
 
+func validationPaymentMethodAction(ctx context.Context, fl validator.FieldLevel) bool {
+	return map[Action]bool{
+		ActionReceivePayment: true,
+	}[Action(fl.Field().String())]
+}
+
 func validationPaymentType(ctx context.Context, fl validator.FieldLevel) bool {
 	return map[PaymentType]bool{
 		PaymentVA:      true,
@@ -110,6 +118,13 @@ func validationRetailOutlet(ctx context.Context, fl validator.FieldLevel) bool {
 		OutletAlfamart:  true,
 		OutletIndomaret: true,
 	}[RetailOutlet(fl.Field().String())]
+}
+
+func validationPaymentMethod(ctx context.Context, fl validator.FieldLevel) bool {
+	return map[PaymentType]bool{
+		PaymentVA:   true,
+		PaymentQRIS: true,
+	}[PaymentType(fl.Field().String())]
 }
 
 func validationVABankCode(ctx context.Context, fl validator.FieldLevel) bool {

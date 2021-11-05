@@ -83,6 +83,7 @@ func (c *Client) GetPaymentWithContext(ctx context.Context, id string) (*Payment
 	if err != nil {
 		return nil, code, err
 	}
+
 	return response.toPayment(), code, nil
 }
 

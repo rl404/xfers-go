@@ -299,3 +299,57 @@ func (p paymentAction) toPaymentAction() *PaymentAction {
 		Action:     p.Data.Attributes.Action,
 	}
 }
+
+type paymentMethod struct {
+	Data struct {
+		ID         string      `json:"id"`
+		Type       PaymentType `json:"type"`
+		Attributes struct {
+			ReferenceID  string `json:"referenceId"`
+			Instructions struct {
+				DisplayName string `json:"displayName"`
+
+				// VA.
+				BankShortCode BankCode `json:"bankShortCode"`
+				AccountNo     string   `json:"accountNo"`
+
+				// QRIS.
+				ImageURL string `json:"imageUrl"`
+			} `json:"instructions"`
+		} `json:"attributes"`
+	} `json:"data"`
+}
+
+func (p paymentMethod) toPaymentMethod() *PaymentMethod {
+	return &PaymentMethod{
+		ID:            p.Data.ID,
+		Type:          p.Data.Type,
+		ReferenceID:   p.Data.Attributes.ReferenceID,
+		DisplayName:   p.Data.Attributes.Instructions.DisplayName,
+		BankShortCode: p.Data.Attributes.Instructions.BankShortCode,
+		AccountNo:     p.Data.Attributes.Instructions.AccountNo,
+		ImageURL:      p.Data.Attributes.Instructions.ImageURL,
+	}
+}
+
+type paymentMethodAction struct {
+	Data struct {
+		Type       string `json:"type"`
+		Attributes struct {
+			TargetID   string `json:"targetId"`
+			TargetType string `json:"targetType"`
+			Name       Action `json:"action"`
+			Options    struct {
+				Amount string `json:"amount"`
+			} `json:"options"`
+		} `json:"attributes"`
+	} `json:"data"`
+}
+
+func (p paymentMethodAction) toPaymentMethodAction() *PaymentMethodAction {
+	return &PaymentMethodAction{
+		TargetID:   p.Data.Attributes.TargetID,
+		TargetType: p.Data.Attributes.TargetType,
+		Name:       p.Data.Attributes.Name,
+	}
+}

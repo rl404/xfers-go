@@ -6,6 +6,15 @@ import (
 	"time"
 )
 
+func (p PaymentType) toURL() string {
+	switch p {
+	case PaymentVA:
+		return string(PaymentVA) + "s"
+	default:
+		return string(p)
+	}
+}
+
 // ValidateBankAccountRequest is request model for validate bank account.
 type ValidateBankAccountRequest struct {
 	AccountNo     string   `json:"accountNo" validate:"required,numeric" mod:"no_space"`
@@ -227,7 +236,10 @@ type SimulatePaymentRequest struct {
 type simulatePaymentRequest struct {
 	Data struct {
 		Attributes struct {
-			Action Action `json:"action"`
+			Action  Action `json:"action"`
+			Options struct {
+				Amount float64 `json:"amount"`
+			} `json:"options"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
@@ -235,5 +247,88 @@ type simulatePaymentRequest struct {
 func (s SimulatePaymentRequest) wrap() simulatePaymentRequest {
 	var r simulatePaymentRequest
 	r.Data.Attributes.Action = s.Action
+	r.Data.Attributes.Options.Amount = s.Amount
+	return r
+}
+
+// CreatePaymentMethodRequest is request model for create payment method.
+type CreatePaymentMethodRequest struct {
+	Type          PaymentType `validate:"required,payment_method" mod:"no_space,lcase"`
+	ReferenceID   string      `validate:"required"`
+	DisplayName   string      `validate:"required" mod:"trim"`
+	BankShortCode BankCode    `mod:"no_space,ucase"`
+	SuffixNo      string      `mod:"no_space"`
+}
+
+type createPaymentMethodRequest struct {
+	Data struct {
+		Attributes struct {
+			ReferenceID   string   `json:"referenceId"`
+			DisplayName   string   `json:"displayName"`
+			BankShortCode BankCode `json:"bankShortCode"`
+			SuffixNo      string   `json:"suffixNo"`
+		} `json:"attributes"`
+	} `json:"data"`
+}
+
+type paymentMethodVAValidation struct {
+	BankShortCode BankCode `validate:"required,va_bank_code"`
+}
+
+func (c *CreatePaymentMethodRequest) validate() error {
+	if err := validate(c); err != nil {
+		return err
+	}
+
+	switch c.Type {
+	case PaymentVA:
+		if err := validate(&paymentMethodVAValidation{BankShortCode: c.BankShortCode}); err != nil {
+			return err
+		}
+	case PaymentQRIS:
+		return nil
+	}
+
+	return nil
+}
+
+func (c *CreatePaymentMethodRequest) wrap() createPaymentMethodRequest {
+	var r createPaymentMethodRequest
+	r.Data.Attributes.ReferenceID = c.ReferenceID
+	r.Data.Attributes.DisplayName = c.DisplayName
+	r.Data.Attributes.BankShortCode = c.BankShortCode
+	r.Data.Attributes.SuffixNo = c.SuffixNo
+	return r
+}
+
+// GetPaymentMethodRequest is request model for get payment method.
+type GetPaymentMethodRequest struct {
+	ID   string      `validate:"required" mod:"no_space"`
+	Type PaymentType `validate:"required,payment_method" mod:"no_space,lcase"`
+}
+
+// SimulatePaymentMethodRequest is request model for simulate payment method.
+type SimulatePaymentMethodRequest struct {
+	ID     string      `validate:"required" mod:"no_space"`
+	Type   PaymentType `validate:"required,payment_method" mod:"no_space,lcase"`
+	Action Action      `validate:"required,payment_method_action" mod:"no_space,lcase"`
+	Amount float64     `validate:"required,gt=0"`
+}
+
+type simulatePaymentMethodRequest struct {
+	Data struct {
+		Attributes struct {
+			Action  Action `json:"action"`
+			Options struct {
+				Amount float64 `json:"amount"`
+			} `json:"options"`
+		} `json:"attributes"`
+	} `json:"data"`
+}
+
+func (s SimulatePaymentMethodRequest) wrap() simulatePaymentMethodRequest {
+	var r simulatePaymentMethodRequest
+	r.Data.Attributes.Action = s.Action
+	r.Data.Attributes.Options.Amount = s.Amount
 	return r
 }
