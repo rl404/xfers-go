@@ -21,6 +21,7 @@ func init() {
 	val.RegisterValidationCtx("disbursement_action", validationDisbursementAction)
 	val.RegisterValidationCtx("payment_method_action", validationPaymentMethodAction)
 	val.RegisterValidationCtx("payment_type", validationPaymentType)
+	val.RegisterValidationCtx("disbursement_type", validationDisbursementType)
 	val.RegisterValidationCtx("retail_outlet", validationRetailOutlet)
 	val.RegisterValidationCtx("va_bank_code", validationVABankCode)
 	val.RegisterValidationCtx("e_wallet", validationEWallet)
@@ -111,6 +112,12 @@ func validationPaymentType(ctx context.Context, fl validator.FieldLevel) bool {
 		PaymentEWallet: true,
 		PaymentQRIS:    true,
 	}[PaymentType(fl.Field().String())]
+}
+
+func validationDisbursementType(ctx context.Context, fl validator.FieldLevel) bool {
+	return map[DisbursementType]bool{
+		DisbursementBankTransfer: true,
+	}[DisbursementType(fl.Field().String())]
 }
 
 func validationRetailOutlet(ctx context.Context, fl validator.FieldLevel) bool {

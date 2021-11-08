@@ -10,23 +10,23 @@ import (
 // Payment is payment model.
 type Payment struct {
 	ID                 string
-	Status             Status
-	Amount             float64
-	CreatedAt          time.Time
-	Descriptions       string
-	ExpiredAt          time.Time
 	ReferenceID        string
-	Fees               float64
 	PaymentMethodID    string
 	Type               PaymentType
+	Amount             float64
+	Fees               float64
+	Status             Status
+	Description        string
 	DisplayName        string
-	RetailOutletName   RetailOutlet // retail
+	RetailOutletCode   RetailOutlet // retail
 	PaymentCode        string       // retail
 	BankShortCode      BankCode     // va
 	AccountNo          string       // va
 	ImageURL           string       // qris
 	HttpURL            string       // e-wallet
 	AfterSettlementURl string       // e-wallet
+	ExpiredAt          time.Time
+	CreatedAt          time.Time
 }
 
 // CreatePayment to create new payment.

@@ -23,24 +23,29 @@ type ValidateBankAccountRequest struct {
 
 type validateBankAccountRequest struct {
 	Data struct {
-		Attributes ValidateBankAccountRequest `json:"attributes"`
+		Attributes struct {
+			AccountNo     string   `json:"accountNo"`
+			BankShortCode BankCode `json:"bankShortCode"`
+		} `json:"attributes"`
 	} `json:"data"`
 }
 
 func (v ValidateBankAccountRequest) wrap() validateBankAccountRequest {
 	var req validateBankAccountRequest
-	req.Data.Attributes = v
+	req.Data.Attributes.AccountNo = v.AccountNo
+	req.Data.Attributes.BankShortCode = v.BankShortCode
 	return req
 }
 
 // CreateDisbursementRequest is request model for create disbursement.
 type CreateDisbursementRequest struct {
-	ReferenceID           string   `validate:"required" mod:"trim"`
-	BankAccountHolderName string   `validate:"required" mod:"trim"`
-	BankAccountNo         string   `validate:"required,numeric" mod:"no_space"`
-	BankShortCode         BankCode `validate:"required,bank_code" mod:"no_space,ucase"`
-	Amount                float64  `validate:"required,gt=0"`
-	Description           string   `mod:"trim"`
+	ReferenceID           string           `validate:"required" mod:"trim"`
+	Type                  DisbursementType `validate:"required,disbursement_type" mod:"no_space,lcase"`
+	BankAccountHolderName string           `validate:"required" mod:"trim"`
+	BankAccountNo         string           `validate:"required,numeric" mod:"no_space"`
+	BankShortCode         BankCode         `validate:"required,bank_code" mod:"no_space,ucase"`
+	Amount                float64          `validate:"required,gt=0"`
+	Description           string           `mod:"trim"`
 }
 
 type createDisbursementRequest struct {
@@ -50,10 +55,10 @@ type createDisbursementRequest struct {
 			ReferenceID        string  `json:"referenceId"`
 			Description        string  `json:"description"`
 			DisbursementMethod struct {
-				Type                  string   `json:"type"`
-				BankShortCode         BankCode `json:"bankShortCode"`
-				BankAccountNo         string   `json:"bankAccountNo"`
-				BankAccountHolderName string   `json:"bankAccountHolderName"`
+				Type                  DisbursementType `json:"type"`
+				BankShortCode         BankCode         `json:"bankShortCode"`
+				BankAccountNo         string           `json:"bankAccountNo"`
+				BankAccountHolderName string           `json:"bankAccountHolderName"`
 			} `json:"disbursementMethod"`
 		} `json:"attributes"`
 	} `json:"data"`
@@ -64,7 +69,7 @@ func (c CreateDisbursementRequest) wrap() createDisbursementRequest {
 	r.Data.Attributes.Amount = c.Amount
 	r.Data.Attributes.ReferenceID = c.ReferenceID
 	r.Data.Attributes.Description = c.Description
-	r.Data.Attributes.DisbursementMethod.Type = "bank_transfer"
+	r.Data.Attributes.DisbursementMethod.Type = c.Type
 	r.Data.Attributes.DisbursementMethod.BankShortCode = c.BankShortCode
 	r.Data.Attributes.DisbursementMethod.BankAccountNo = c.BankAccountNo
 	r.Data.Attributes.DisbursementMethod.BankAccountHolderName = c.BankAccountHolderName
@@ -151,7 +156,7 @@ type createPaymentRequest struct {
 			PaymentMethodType    PaymentType `json:"paymentMethodType"`
 			Amount               float64     `json:"amount"`
 			ReferenceID          string      `json:"referenceId"`
-			ExpiredAt            time.Time   `json:"expiredAt,omitempty"`
+			ExpiredAt            time.Time   `json:"expiredAt"`
 			Description          string      `json:"description"`
 			PaymentMethodOptions struct {
 				// All.

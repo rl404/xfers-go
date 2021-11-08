@@ -33,6 +33,14 @@ const (
 	StatusCompleted  Status = "completed"  // payment & disbursement
 )
 
+// DisbursementType is type for disbursement method.
+type DisbursementType string
+
+// Available options for DisbursementType.
+const (
+	DisbursementBankTransfer DisbursementType = "bank_transfer"
+)
+
 // Action is type for payment & disbursement simulate action.
 type Action string
 

@@ -11,17 +11,18 @@ import (
 type Disbursement struct {
 	ID                          string
 	ReferenceID                 string
-	Description                 string
+	Type                        DisbursementType
 	Amount                      float64
-	Status                      Status
-	CreatedAt                   time.Time
 	Fees                        float64
-	FailureReason               string
+	Status                      Status
 	BankAccountNo               string
 	BankShortCode               BankCode
 	BankName                    string
 	BankAccountHolderName       string
 	ServerBankAccountHolderName string
+	Description                 string
+	FailureReason               string
+	CreatedAt                   time.Time
 }
 
 // CreateDisbursement to create new disbursement.

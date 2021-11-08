@@ -8,9 +8,9 @@ import (
 
 // Balance is account balance model.
 type Balance struct {
-	TotalBalance     string `json:"totalBalance"`
-	AvailableBalance string `json:"availableBalance"`
-	PendingBalance   string `json:"pendingBalance"`
+	TotalBalance     float64
+	AvailableBalance float64
+	PendingBalance   float64
 }
 
 // GetBalance to get account balance.
@@ -34,13 +34,13 @@ func (c *Client) GetBalanceWithContext(ctx context.Context) (*Balance, int, erro
 	if err != nil {
 		return nil, code, err
 	}
-	return &response.Data.Attributes, code, nil
+	return response.toBalance(), code, nil
 }
 
 // Bank is disbursement bank model.
 type Bank struct {
-	Name      string   `json:"name"`
-	ShortCode BankCode `json:"shortCode"`
+	Name      string
+	ShortCode BankCode
 }
 
 // GetBanks to get disbursement bank list.
@@ -69,9 +69,9 @@ func (c *Client) GetBanksWithContext(ctx context.Context) ([]Bank, int, error) {
 
 // BankAccount is bank account model.
 type BankAccount struct {
-	AccountName   string   `json:"accountName"`
-	AccountNo     string   `json:"accountNo"`
-	BankShortCode BankCode `json:"bankShortCode"`
+	AccountName   string
+	AccountNo     string
+	BankShortCode BankCode
 }
 
 // ValidateBankAccount to validate bank account.
@@ -100,5 +100,5 @@ func (c *Client) ValidateBankAccountWithContext(ctx context.Context, request Val
 		return nil, code, err
 	}
 
-	return &response.Data.Attributes, code, nil
+	return response.toBankAccount(), code, nil
 }

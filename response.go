@@ -7,15 +7,33 @@ import (
 
 type balance struct {
 	Data struct {
-		Attributes Balance `json:"attributes"`
+		Attributes struct {
+			TotalBalance     string `json:"totalBalance"`
+			AvailableBalance string `json:"availableBalance"`
+			PendingBalance   string `json:"pendingBalance"`
+		} `json:"attributes"`
 	} `json:"data"`
+}
+
+func (b balance) toBalance() *Balance {
+	tb, _ := strconv.ParseFloat(b.Data.Attributes.TotalBalance, 64)
+	ab, _ := strconv.ParseFloat(b.Data.Attributes.AvailableBalance, 64)
+	pb, _ := strconv.ParseFloat(b.Data.Attributes.PendingBalance, 64)
+	return &Balance{
+		TotalBalance:     tb,
+		AvailableBalance: ab,
+		PendingBalance:   pb,
+	}
 }
 
 type bank struct {
 	Data []struct {
 		ID         string `json:"id"`
 		Type       string `json:"type"`
-		Attributes Bank   `json:"attributes"`
+		Attributes struct {
+			Name      string   `json:"name"`
+			ShortCode BankCode `json:"shortCode"`
+		} `json:"attributes"`
 	} `json:"data"`
 }
 
@@ -32,32 +50,46 @@ func (b *bank) toBanks() []Bank {
 
 type bankAccount struct {
 	Data struct {
-		Attributes BankAccount `json:"attributes"`
+		Attributes struct {
+			AccountName   string   `json:"accountName"`
+			AccountNo     string   `json:"accountNo"`
+			BankShortCode BankCode `json:"bankShortCode"`
+		} `json:"attributes"`
 	} `json:"data"`
 }
 
+func (b bankAccount) toBankAccount() *BankAccount {
+	return &BankAccount{
+		AccountName:   b.Data.Attributes.AccountName,
+		AccountNo:     b.Data.Attributes.AccountNo,
+		BankShortCode: b.Data.Attributes.BankShortCode,
+	}
+}
+
 type disbursement struct {
-	Data struct {
-		ID         string `json:"id"`
-		Type       string `json:"type"`
-		Attributes struct {
-			ReferenceID        string    `json:"referenceId"`
-			Description        string    `json:"description"`
-			Amount             string    `json:"amount"`
-			Status             Status    `json:"status"`
-			CreatedAt          time.Time `json:"createdAt"`
-			Fees               string    `json:"fees"`
-			FailureReason      string    `json:"failureReason"`
-			DisbursementMethod struct {
-				Type                        string   `json:"type"`
-				BankAccountNo               string   `json:"bankAccountNo"`
-				BankShortCode               BankCode `json:"bankShortCode"`
-				BankName                    string   `json:"bankName"`
-				BankAccountHolderName       string   `json:"bankAccountHolderName"`
-				ServerBankAccountHolderName string   `json:"serverBankAccountHolderName"`
-			} `json:"disbursementMethod"`
-		} `json:"attributes"`
-	} `json:"data"`
+	Data disbursementData `json:"data"`
+}
+
+type disbursementData struct {
+	ID         string `json:"id"`
+	Type       string `json:"type"`
+	Attributes struct {
+		ReferenceID        string    `json:"referenceId"`
+		Description        string    `json:"description"`
+		Amount             string    `json:"amount"`
+		Status             Status    `json:"status"`
+		CreatedAt          time.Time `json:"createdAt"`
+		Fees               string    `json:"fees"`
+		FailureReason      string    `json:"failureReason"`
+		DisbursementMethod struct {
+			Type                        DisbursementType `json:"type"`
+			BankAccountNo               string           `json:"bankAccountNo"`
+			BankShortCode               BankCode         `json:"bankShortCode"`
+			BankName                    string           `json:"bankName"`
+			BankAccountHolderName       string           `json:"bankAccountHolderName"`
+			ServerBankAccountHolderName string           `json:"serverBankAccountHolderName"`
+		} `json:"disbursementMethod"`
+	} `json:"attributes"`
 }
 
 func (d disbursement) toDisbursement() *Disbursement {
@@ -71,6 +103,7 @@ func (d disbursement) toDisbursement() *Disbursement {
 		Status:                      d.Data.Attributes.Status,
 		CreatedAt:                   d.Data.Attributes.CreatedAt,
 		Fees:                        fees,
+		Type:                        d.Data.Attributes.DisbursementMethod.Type,
 		FailureReason:               d.Data.Attributes.FailureReason,
 		BankAccountNo:               d.Data.Attributes.DisbursementMethod.BankAccountNo,
 		BankShortCode:               d.Data.Attributes.DisbursementMethod.BankShortCode,
@@ -81,27 +114,7 @@ func (d disbursement) toDisbursement() *Disbursement {
 }
 
 type disbursements struct {
-	Data []struct {
-		ID         string `json:"id"`
-		Type       string `json:"type"`
-		Attributes struct {
-			ReferenceID        string    `json:"referenceId"`
-			Description        string    `json:"description"`
-			Amount             string    `json:"amount"`
-			Status             Status    `json:"status"`
-			CreatedAt          time.Time `json:"createdAt"`
-			Fees               string    `json:"fees"`
-			FailureReason      string    `json:"failureReason"`
-			DisbursementMethod struct {
-				Type                        string   `json:"type"`
-				BankAccountNo               string   `json:"bankAccountNo"`
-				BankShortCode               BankCode `json:"bankShortCode"`
-				BankName                    string   `json:"bankName"`
-				BankAccountHolderName       string   `json:"bankAccountHolderName"`
-				ServerBankAccountHolderName string   `json:"serverBankAccountHolderName"`
-			} `json:"disbursementMethod"`
-		} `json:"attributes"`
-	} `json:"data"`
+	Data []disbursementData `json:"data"`
 }
 
 func (d disbursements) toDisbursements() []Disbursement {
@@ -117,6 +130,7 @@ func (d disbursements) toDisbursements() []Disbursement {
 			Status:                      dd.Attributes.Status,
 			CreatedAt:                   dd.Attributes.CreatedAt,
 			Fees:                        fees,
+			Type:                        dd.Attributes.DisbursementMethod.Type,
 			FailureReason:               dd.Attributes.FailureReason,
 			BankAccountNo:               dd.Attributes.DisbursementMethod.BankAccountNo,
 			BankShortCode:               dd.Attributes.DisbursementMethod.BankShortCode,
@@ -148,43 +162,45 @@ func (d disbursementAction) toDisbursementAction() *DisbursementAction {
 }
 
 type payment struct {
-	Data struct {
-		ID         string `json:"id"`
-		Type       string `json:"type"`
-		Attributes struct {
-			Status        Status    `json:"status"`
-			Amount        string    `json:"amount"`
-			CreatedAt     time.Time `json:"createdAt"`
-			Description   string    `json:"description"`
-			ExpiredAt     time.Time `json:"expiredAt"`
-			ReferenceID   string    `json:"referenceId"`
-			Fees          string    `json:"fees"`
-			PaymentMethod struct {
-				ID           string      `json:"id"`
-				Type         PaymentType `json:"type"`
-				ReferenceID  string      `json:"referenceId"`
-				Instructions struct {
-					DisplayName string `json:"displayName"`
+	Data paymentData `json:"data"`
+}
 
-					// Retail outlet.
-					RetailOutletName RetailOutlet `json:"retailOutletName"`
-					PaymentCode      string       `json:"paymentCode"`
+type paymentData struct {
+	ID         string `json:"id"`
+	Type       string `json:"type"`
+	Attributes struct {
+		Status        Status    `json:"status"`
+		Amount        string    `json:"amount"`
+		CreatedAt     time.Time `json:"createdAt"`
+		Description   string    `json:"description"`
+		ExpiredAt     time.Time `json:"expiredAt"`
+		ReferenceID   string    `json:"referenceId"`
+		Fees          string    `json:"fees"`
+		PaymentMethod struct {
+			ID           string      `json:"id"`
+			Type         PaymentType `json:"type"`
+			ReferenceID  string      `json:"referenceId"`
+			Instructions struct {
+				DisplayName string `json:"displayName"`
 
-					// VA.
-					BankShortCode BankCode `json:"bankShortCode"`
-					AccountNo     string   `json:"accountNo"`
+				// Retail outlet.
+				RetailOutletCode RetailOutlet `json:"retailOutletCode"`
+				PaymentCode      string       `json:"paymentCode"`
 
-					// QRIS.
-					ImageURL string `json:"imageUrl"`
-				} `json:"instructions"`
-				// E-wallet.
-				Settlement struct {
-					HttpURL            string `json:"httpUrl"`
-					AfterSettlementURL string `json:"afterSettlementUrl"`
-				} `json:"settlement"`
-			} `json:"paymentMethod"`
-		} `json:"attributes"`
-	} `json:"data"`
+				// VA.
+				BankShortCode BankCode `json:"bankShortCode"`
+				AccountNo     string   `json:"accountNo"`
+
+				// QRIS.
+				ImageURL string `json:"imageUrl"`
+			} `json:"instructions"`
+			// E-wallet.
+			Settlement struct {
+				HttpURL            string `json:"httpUrl"`
+				AfterSettlementURL string `json:"afterSettlementUrl"`
+			} `json:"settlement"`
+		} `json:"paymentMethod"`
+	} `json:"attributes"`
 }
 
 func (p payment) toPayment() *Payment {
@@ -195,14 +211,14 @@ func (p payment) toPayment() *Payment {
 		Status:             p.Data.Attributes.Status,
 		Amount:             amount,
 		CreatedAt:          p.Data.Attributes.CreatedAt,
-		Descriptions:       p.Data.Attributes.Description,
+		Description:        p.Data.Attributes.Description,
 		ExpiredAt:          p.Data.Attributes.ExpiredAt,
 		ReferenceID:        p.Data.Attributes.ReferenceID,
 		Fees:               fees,
 		PaymentMethodID:    p.Data.Attributes.PaymentMethod.ID,
 		Type:               p.Data.Attributes.PaymentMethod.Type,
 		DisplayName:        p.Data.Attributes.PaymentMethod.Instructions.DisplayName,
-		RetailOutletName:   p.Data.Attributes.PaymentMethod.Instructions.RetailOutletName,
+		RetailOutletCode:   p.Data.Attributes.PaymentMethod.Instructions.RetailOutletCode,
 		PaymentCode:        p.Data.Attributes.PaymentMethod.Instructions.PaymentCode,
 		BankShortCode:      p.Data.Attributes.PaymentMethod.Instructions.BankShortCode,
 		AccountNo:          p.Data.Attributes.PaymentMethod.Instructions.AccountNo,
@@ -213,43 +229,7 @@ func (p payment) toPayment() *Payment {
 }
 
 type payments struct {
-	Data []struct {
-		ID         string `json:"id"`
-		Type       string `json:"type"`
-		Attributes struct {
-			Status        Status    `json:"status"`
-			Amount        string    `json:"amount"`
-			CreatedAt     time.Time `json:"createdAt"`
-			Description   string    `json:"description"`
-			ExpiredAt     time.Time `json:"expiredAt"`
-			ReferenceID   string    `json:"referenceId"`
-			Fees          string    `json:"fees"`
-			PaymentMethod struct {
-				ID           string      `json:"id"`
-				Type         PaymentType `json:"type"`
-				ReferenceID  string      `json:"referenceId"`
-				Instructions struct {
-					DisplayName string `json:"displayName"`
-
-					// Retail outlet.
-					RetailOutletName RetailOutlet `json:"retailOutletName"`
-					PaymentCode      string       `json:"paymentCode"`
-
-					// VA.
-					BankShortCode BankCode `json:"bankShortCode"`
-					AccountNo     string   `json:"accountNo"`
-
-					// QRIS.
-					ImageURL string `json:"imageUrl"`
-				} `json:"instructions"`
-				// E-wallet.
-				Settlement struct {
-					HttpURL            string `json:"httpUrl"`
-					AfterSettlementURL string `json:"afterSettlementUrl"`
-				} `json:"settlement"`
-			} `json:"paymentMethod"`
-		} `json:"attributes"`
-	} `json:"data"`
+	Data []paymentData `json:"data"`
 }
 
 func (p payments) toPayments() []Payment {
@@ -262,14 +242,14 @@ func (p payments) toPayments() []Payment {
 			Status:             pp.Attributes.Status,
 			Amount:             amount,
 			CreatedAt:          pp.Attributes.CreatedAt,
-			Descriptions:       pp.Attributes.Description,
+			Description:        pp.Attributes.Description,
 			ExpiredAt:          pp.Attributes.ExpiredAt,
 			ReferenceID:        pp.Attributes.ReferenceID,
 			Fees:               fees,
 			PaymentMethodID:    pp.Attributes.PaymentMethod.ID,
 			Type:               pp.Attributes.PaymentMethod.Type,
 			DisplayName:        pp.Attributes.PaymentMethod.Instructions.DisplayName,
-			RetailOutletName:   pp.Attributes.PaymentMethod.Instructions.RetailOutletName,
+			RetailOutletCode:   pp.Attributes.PaymentMethod.Instructions.RetailOutletCode,
 			PaymentCode:        pp.Attributes.PaymentMethod.Instructions.PaymentCode,
 			BankShortCode:      pp.Attributes.PaymentMethod.Instructions.BankShortCode,
 			AccountNo:          pp.Attributes.PaymentMethod.Instructions.AccountNo,

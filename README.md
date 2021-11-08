@@ -43,14 +43,14 @@ import (
 )
 
 func main() {
-    // Prepare API and secret key.
+	// Prepare API and secret key.
 	apiKey := "test_xxx"
 	secretKey := "abc123"
 
-    // Create xfers client.
+	// Create xfers client.
 	x := xfers.NewDefault(apiKey, secretKey, xfers.Sandbox)
 
-    // Get your xfers's account balance.
+	// Get your xfers's account balance.
 	balance, code, err := x.GetBalance()
 	if err != nil {
 		log.Println(code, err)
