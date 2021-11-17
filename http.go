@@ -90,7 +90,7 @@ func (r *requester) doRequest(req *http.Request, response interface{}) (int, err
 			return http.StatusInternalServerError, ErrInternal
 		}
 		if len(errResp.Errors) > 0 {
-			return resp.StatusCode, errors.New(errResp.Errors[0].Title)
+			return resp.StatusCode, errors.New(errResp.Errors[0].Detail)
 		}
 		return resp.StatusCode, errors.New(http.StatusText(resp.StatusCode))
 	}
