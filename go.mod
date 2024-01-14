@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/go-playground/mold/v4 v4.5.0
-	github.com/go-playground/validator/v10 v10.16.0
+	github.com/go-playground/validator/v10 v10.17.0
 )
 
 require (
