@@ -1,7 +1,7 @@
 # Xfers-go
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/rl404/xfers-go)](https://goreportcard.com/report/github.com/rl404/xfers-go)
 ![License: MIT](https://img.shields.io/github/license/rl404/xfers-go.svg)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/rl404/xfers-go)
 [![Go Reference](https://pkg.go.dev/badge/github.com/rl404/xfers-go.svg)](https://pkg.go.dev/github.com/rl404/xfers-go)
 
 _xfers-go_ is unofficial golang API wrapper for [xfers](https://www.xfers.com/id?). Only for V4 indonesian xfers.
@@ -27,7 +27,7 @@ For official documentation, go [here](https://docs.xfers.com/reference/introduct
 
 ## Installation
 
-```
+```sh
 go get github.com/rl404/xfers-go
 ```
 
@@ -37,31 +37,31 @@ go get github.com/rl404/xfers-go
 package main
 
 import (
-	"log"
+    "log"
 
-	"github.com/rl404/xfers-go"
+    "github.com/rl404/xfers-go"
 )
 
 func main() {
-	// Prepare API and secret key.
-	apiKey := "test_xxx"
-	secretKey := "abc123"
+    // Prepare API and secret key.
+    apiKey := "test_xxx"
+    secretKey := "abc123"
 
-	// Create xfers client.
-	x := xfers.NewDefault(apiKey, secretKey, xfers.Sandbox)
+    // Create xfers client.
+    x := xfers.NewDefault(apiKey, secretKey, xfers.Sandbox)
 
-	// Get your xfers's account balance.
-	balance, code, err := x.GetBalance()
-	if err != nil {
-		log.Println(code, err)
-		return
-	}
+    // Get your xfers's account balance.
+    balance, code, err := x.GetBalance()
+    if err != nil {
+        log.Println(code, err)
+        return
+    }
 
-	log.Println(code, balance)
+    log.Println(code, balance)
 }
 ```
 
-*For more detail config and usage, please go to the [documentation](https://pkg.go.dev/github.com/rl404/xfers-go).*
+_For more detail config and usage, please go to the [documentation](https://pkg.go.dev/github.com/rl404/xfers-go)._
 
 ## License
 
